@@ -1,6 +1,6 @@
 gripst
 ======
-grep all your gists
+brute-force grep all your gists
 
 ```
 export GITHUB_USER_ACCESS_TOKEN=defaceddeadbeeffacade1d10baddabb1ebbabe1
