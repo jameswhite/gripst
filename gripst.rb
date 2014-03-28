@@ -25,32 +25,40 @@ class Gripst
   end
 
   def clone(id)
-    g = Git.clone("https://#{@auth_token}@gist.github.com/#{id}.git", id, :path => "#{@tmpdir}")
+    begin
+      g = Git.clone("https://#{@auth_token}@gist.github.com/#{id}.git", id, :path => "#{@tmpdir}")
+    rescue
+      $stderr.puts "git fell down on #{id}"
+      return false
+    end
+    return true
   end
 
   def grep_gist(regex,id)
-    clone(id)
-    Find.find("#{@tmpdir}/#{id}") do |path|
-    if path == "#{@tmpdir}/#{id}/.git"
-        Find.prune
-      else
-        if File.file?(path)
-          fh = File.new(path)
-          fh.each do |line|
-            begin
-              matches = /#{regex}/.match(line)
-            rescue ArgumentError
-              $stderr.puts "Skipping... #{id}(#{(path).gsub("#{@tmpdir}/#{id}/","")}) #{$!}"
-              sleep 300
-            end
-            if matches != nil
-              puts "#{id} (#{(path).gsub("#{@tmpdir}/#{id}/","")}) #{line}"
+    if clone(id)
+      Find.find("#{@tmpdir}/#{id}") do |path|
+      if path == "#{@tmpdir}/#{id}/.git"
+          Find.prune
+        else
+          if File.file?(path)
+            fh = File.new(path)
+            fh.each do |line|
+              begin
+                matches = /#{regex}/.match(line)
+              rescue ArgumentError
+                $stderr.puts "Skipping... #{id}(#{(path).gsub("#{@tmpdir}/#{id}/","")}) #{$!}"
+                sleep 300
+              end
+              if matches != nil
+                puts "#{id} (#{(path).gsub("#{@tmpdir}/#{id}/","")}) #{line}"
+              end
             end
           end
         end
       end
     end
   end
+
 end
 
 ################################################################################
