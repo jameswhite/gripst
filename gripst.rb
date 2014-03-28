@@ -11,6 +11,13 @@ class Gripst
     @tmpdir = Dir.mktmpdir
   end
 
+  def initialized
+    if @auth_token != nil
+      return true
+    end
+    return false
+  end
+
   def all_gists
     all_gists = Array.new
     Octokit.auto_paginate = true
@@ -64,8 +71,12 @@ end
 ################################################################################
 begin
   gripst = Gripst.new
-  gripst.all_gists.each do |id|
-    gripst.grep_gist(ARGV[0],id)
+  if gripst.initialized
+    gripst.all_gists.each do |id|
+      gripst.grep_gist(ARGV[0],id)
+    end
+  else
+    $stderr.puts "please set GITHUB_USER_ACCESS_TOKEN in env"
   end
 rescue SystemExit, Interrupt
   $stderr.puts "Ok."
