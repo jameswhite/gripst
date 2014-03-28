@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
-
 class Gripst
+  require 'find'
   require 'git'
   require 'octokit'
   require 'tmpdir'
 
   def initialize
-    @auth_token=ENV['HUBOT_GITHUB_TOKEN']
+    @auth_token=ENV['GITHUB_USER_ACCESS_TOKEN']
     puts Dir.methods.grep("tmp").join " "
     @tmpdir = Dir.mktmpdir
   end
@@ -25,31 +25,36 @@ class Gripst
   end
 
   def clone(id)
-    g = Git.clone("https://#{@auth_token}:#{@auth_token}@gist.github.com/#{id}.git", id, :path => "#{@tmpdir}")
+    g = Git.clone("https://#{@auth_token}@gist.github.com/#{id}.git", id, :path => "#{@tmpdir}")
   end
 
   def grep_gist(regex,id)
     clone(id)
     Find.find("#{@tmpdir}/#{id}") do |path|
-    if path == "#{@gittmp}/#{user}/#{repo}/.git"
-        Find.prune       # Don't look
+    if path == "#{@tmpdir}/#{id}/.git"
+        Find.prune
       else
         if File.file?(path)
           fh = File.new(path)
           fh.each do |line|
-            # YOU ARE HERE
-            puts line
+            begin
+              matches = /#{regex}/.match(line)
+            rescue ArgumentError
+              $stderr.puts "Skipping... #{id}(#{(path).gsub("#{@tmpdir}/#{id}/","")}) #{$!}"
+              sleep 300
+            end
+            if matches != nil
+              puts "#{id} (#{(path).gsub("#{@tmpdir}/#{id}/","")}) #{line}"
+            end
           end
         end
       end
     end
   end
-
 end
 
 ################################################################################
-
 gripst = Gripst.new
 gripst.all_gists.each do |id|
-  gripst.grep_gist(id,"stuff")
+  gripst.grep_gist(ARGV[0],id)
 end
