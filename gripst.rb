@@ -28,7 +28,7 @@ class Gripst
     begin
       g = Git.clone("https://#{@auth_token}@gist.github.com/#{id}.git", id, :path => "#{@tmpdir}")
     rescue
-      $stderr.puts "git fell down on #{id}"
+      $stderr.puts "ERROR: git fell down on #{id}"
       return false
     end
     return true
