@@ -62,7 +62,11 @@ class Gripst
 end
 
 ################################################################################
-gripst = Gripst.new
-gripst.all_gists.each do |id|
-  gripst.grep_gist(ARGV[0],id)
+begin
+  gripst = Gripst.new
+  gripst.all_gists.each do |id|
+    gripst.grep_gist(ARGV[0],id)
+  end
+rescue SystemExit, Interrupt
+  $stderr.puts "Ok."
 end
